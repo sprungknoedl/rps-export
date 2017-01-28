@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="de">
+    {{ template "head" }}
+    <body>
+        <div class="aligner container">
+            <div class="col-sm-6 col-xs-12">
+                <div class="well">
+                    <div class="text-center">
+                        {{ template "panda-img" }}
+                        <h2 class="text-danger">Es ist ein Fehler aufgetreten!</h2>
+                        <hr />
+                    </div>
+
+                    <div class="text-center">
+                        <h4 class="long-link">{{ .error }}</h4>
+
+                        <hr />
+                        <a href="/" class="btn btn-default">Zurück</a>
+                    </div>
+                </div>
+
+                <p class="text-center text-muted">
+                    Den Quellcode für diese Webseite findest du auf <a href="https://github.com/sprungknoedl/rps-export">GitHub</a> .
+                </p>
+            </div>
+        </div>
+
+        {{ template "scripts" }}
+    </body>
+</html>

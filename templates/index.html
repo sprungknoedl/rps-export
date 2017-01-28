@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+    {{ template "head" }}
+    <body>
+        <div class="aligner container">
+            <div class="col-sm-6 col-xs-12">
+                <div class="well">
+                    {{ if eq .url "" }}
+                    <div class="text-center">
+                        {{ template "hippo-img" }}
+                        <h2>RPS Export</h2>
+                        <hr />
+                    </div>
+
+                    <p>
+                        Dieser Webseite ermöglicht es dir deinen RPS Dienstplan in Google Kalendar und ähnlichen Dienste einzubinden
+                        und automatisch auf dem aktuellen Stand zu halten.
+                    </p>
+
+                    <p>
+                        Dazu benötige ich allerdings deine Zugangsdaten für RPS. <strong>Keine Sorge, deine Daten werden nicht gespeichert!</strong>
+                        Stattdessen erhälts du eine URL die alle Daten in verschlüsselter Form enthält. 
+                    </p>
+
+                    <p>
+                        Mit dieser URL kannst du dann deinen Dienstplan bei anderen Kalendern hinzufügen.
+                    </p>
+
+                    <form method="POST">
+                        <input type="hidden" name="login" value="Login">
+
+                        <div class="form-group">
+                            <label for="loginname">Benutzername</label>
+                            <input class="form-control" type="text" name="loginname" placeholder="max@example.com" required autofocus>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input class="form-control" type="password" name="password" placeholder="passwort123" required>
+                        </div>
+
+                        <div class="text-center">
+                        <hr />
+                        <button class="btn btn-primary" type="submit">URL erstellen</button>
+                        </div>
+                    </form>
+
+                    {{ else }}
+                    <div class="text-center">
+                        {{ template "tiger-img" }}
+                        <h2>RPS Export</h2>
+                        <hr />
+                    </div>
+
+
+                    <div class="text-center">
+
+                        <p>
+                            Mit dieser URL kannst du dann deinen Dienstplan bei anderen Kalendern hinzufügen:
+                        </p>
+
+                        <p>
+                            <strong class="long-text"><a href="{{ .url }}">{{ .url }}</a></strong>
+                        </p>
+
+                        <hr />
+                        <a href="/" class="btn btn-default">Zurück</a>
+                    </div>
+                    {{ end }}
+                </div>  
+
+                <p class="text-center text-muted">
+                    Den Quellcode für diese Webseite findest du auf <a href="https://github.com/sprungknoedl/rps-export">GitHub</a> .
+                </p>
+            </div>
+        </div>
+
+        {{ template "scripts" }}
+    </body>
+</html>
