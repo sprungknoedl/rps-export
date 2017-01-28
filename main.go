@@ -38,7 +38,7 @@ func main() {
 
 	copy(app.SecretKey[:], key)
 
-	http.HandleFunc("/ics", app.ProxyICS)
+	http.HandleFunc("/ical", app.ProxyICS)
 	http.HandleFunc("/", app.Index)
 	http.ListenAndServe(listenAddress, nil)
 }
