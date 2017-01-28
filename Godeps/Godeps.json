@@ -7,6 +7,10 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/felixge/httpsnoop",
+			"Rev": "287b56e9e314227d3113c7c6b434d31aec68089d"
+		},
+		{
 			"ImportPath": "github.com/gorilla/context",
 			"Comment": "v1.1-7-g08b5f42",
 			"Rev": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"

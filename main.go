@@ -16,10 +16,20 @@ import (
 	"strings"
 	"time"
 
+	"github.com/felixge/httpsnoop"
 	"github.com/nimbusec-oss/minion"
 	"golang.org/x/crypto/nacl/secretbox"
 )
 
+const (
+	// RPSLoginURL is the URL the login form send the login data
+	RPSLoginURL = "https://dienstplan.o.roteskreuz.at/login.php"
+	// RPSCalendarURL is the URL where the upcoming duties are downloaded as iCal.
+	RPSCalendarURL = "https://dienstplan.o.roteskreuz.at/mais/nextJobs.php?ics=true"
+)
+
+// App holds the SecretKey used to encrypt and decrypt the login data part of the
+// calendar URLs.
 type App struct {
 	minion.Minion
 	SecretKey [32]byte
@@ -32,17 +42,28 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app := App{
-		Minion: minion.NewMinion("rkd", key),
-	}
-
+	app := App{Minion: minion.NewMinion("rkd", key)}
 	copy(app.SecretKey[:], key)
 
-	http.HandleFunc("/ical", app.ProxyICS)
-	http.HandleFunc("/", app.Index)
+	http.HandleFunc("/ical", Logging(app.ProxyICS))
+	http.HandleFunc("/", Logging(app.Index))
 	http.ListenAndServe(listenAddress, nil)
 }
 
+// Logging is a simple logging middleware.
+func Logging(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		m := httpsnoop.CaptureMetrics(fn, w, r)
+		log.Printf("⇄ %s %s ⇢ %d in %v",
+			r.Method,
+			r.URL.String(),
+			m.Code,
+			m.Duration)
+	}
+}
+
+// Index serves the login form and the generated URL for the
+// calendar.
 func (app App) Index(w http.ResponseWriter, r *http.Request) {
 	url := ""
 	if r.Method == http.MethodPost {
@@ -52,18 +73,20 @@ func (app App) Index(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		log.Printf("⇒ validating login for user %s", r.FormValue("loginname"))
 		err = LoginToRPS(http.DefaultClient, r.Form)
 		if err != nil {
 			app.Error(w, r, http.StatusBadRequest, err)
 			return
 		}
 
-		encrypted, err := Encrypt(r.Form, &app.SecretKey)
+		encrypted, err := EncryptForm(r.Form, &app.SecretKey)
 		if err != nil {
 			app.Error(w, r, http.StatusInternalServerError, err)
 			return
 		}
 
+		log.Printf("⇒ created calendar url for user %s", r.FormValue("loginname"))
 		url = os.Getenv("BASE_URL") + "/ical?" + string(encrypted)
 	}
 
@@ -72,8 +95,10 @@ func (app App) Index(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// ProxyICS proxies the calendar from RPS to the caller. The login to RPS
+// happens via the provided encrypted form data as part of the query.
 func (app App) ProxyICS(w http.ResponseWriter, r *http.Request) {
-	form, err := Decrypt(r.URL.RawQuery, &app.SecretKey)
+	form, err := DecryptForm(r.URL.RawQuery, &app.SecretKey)
 	if err != nil {
 		app.Error(w, r, http.StatusBadRequest, err)
 		return
@@ -87,7 +112,7 @@ func (app App) ProxyICS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := http.Client{
+	client := &http.Client{
 		Jar:     jar,
 		Timeout: 5 * time.Second,
 		Transport: &http.Transport{
@@ -97,15 +122,14 @@ func (app App) ProxyICS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// login
-	resp, err := client.PostForm("https://dienstplan.o.roteskreuz.at/login.php", form)
+	err = LoginToRPS(client, form)
 	if err != nil {
 		app.Error(w, r, http.StatusBadGateway, err)
 		return
 	}
-	resp.Body.Close()
 
 	// ics download
-	resp, err = client.Get("https://dienstplan.o.roteskreuz.at/mais/nextJobs.php?ics=true")
+	resp, err := client.Get(RPSCalendarURL)
 	if err != nil {
 		app.Error(w, r, http.StatusBadGateway, err)
 		return
@@ -117,7 +141,9 @@ func (app App) ProxyICS(w http.ResponseWriter, r *http.Request) {
 	resp.Body.Close()
 }
 
-func Encrypt(values url.Values, key *[32]byte) (string, error) {
+// EncryptForm encrypts the form an returns an string that is safe to
+// include in the query part of the URL.
+func EncryptForm(values url.Values, key *[32]byte) (string, error) {
 	var nonce [24]byte
 	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
 		return "", err
@@ -129,7 +155,8 @@ func Encrypt(values url.Values, key *[32]byte) (string, error) {
 	return msg, nil
 }
 
-func Decrypt(msg string, key *[32]byte) (url.Values, error) {
+// DecryptForm decrypts an encrypted form query string.
+func DecryptForm(msg string, key *[32]byte) (url.Values, error) {
 	encrypted, err := base64.RawURLEncoding.DecodeString(msg)
 	if err != nil {
 		return url.Values{}, err
@@ -145,8 +172,10 @@ func Decrypt(msg string, key *[32]byte) (url.Values, error) {
 	return url.ParseQuery(string(decrypted))
 }
 
+// LoginToRPS tries to login to RPS with the provided form data or
+// returns an error.
 func LoginToRPS(client *http.Client, form url.Values) error {
-	resp, err := client.PostForm("https://dienstplan.o.roteskreuz.at/login.php", form)
+	resp, err := client.PostForm(RPSLoginURL, form)
 	if err != nil {
 		return err
 	}
