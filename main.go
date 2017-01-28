@@ -112,7 +112,7 @@ func (app App) ProxyICS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "text/calendar")
-	w.Header().Add("Content-Disposition", "attachment; filename=rkd.ics")
+	w.Header().Add("Content-Disposition", "attachment; filename=rps-export.ics")
 	io.Copy(w, resp.Body)
 	resp.Body.Close()
 }
