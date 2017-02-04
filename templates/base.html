@@ -13,16 +13,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100%;
-    }
-
-    .aligner-item {
-        width: 50%;
-        max-width: 50%;
+        min-height: 100%;
     }
 
     .long-text {
         word-wrap: break-word;
+    }
+
+    @media (max-width:767px){
+        .well {
+            margin-top: 20px;
+        }
     }
     </style>
 </head>
