@@ -25,7 +25,7 @@ const (
 	// RPSLoginURL is the URL the login form send the login data
 	RPSLoginURL = "https://dienstplan.o.roteskreuz.at/login.php"
 	// RPSCalendarURL is the URL where the upcoming duties are downloaded as iCal.
-	RPSCalendarURL = "https://dienstplan.o.roteskreuz.at/mais/nextJobs.php?ics=true"
+	RPSCalendarURL = "https://dienstplan.o.roteskreuz.at/mais/naechste_dienste.ics"
 )
 
 // App holds the SecretKey used to encrypt and decrypt the login data part of the
@@ -129,7 +129,16 @@ func (app App) ProxyICS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// ics download
-	resp, err := client.Get(RPSCalendarURL)
+	icsform := url.Values{
+		"abteilung":  {"-1"},
+		"schicht":    {"*"},
+		"dienstart":  {"-1"},
+		"verwendung": {"*"},
+		"maxResults": {"100"},
+		"ics":        {"true"},
+		"form.event.onsubmit": {"dienstFilter"},
+	}
+	resp, err := client.PostForm(RPSCalendarURL, icsform)
 	if err != nil {
 		app.Error(w, r, http.StatusBadGateway, err)
 		return
