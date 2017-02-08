@@ -46,6 +46,7 @@ func main() {
 	copy(app.SecretKey[:], key)
 
 	http.HandleFunc("/ical", Logging(app.ProxyICS))
+	http.HandleFunc("/gen", Logging(app.GenerateURL))
 	http.HandleFunc("/", Logging(app.Index))
 	http.ListenAndServe(listenAddress, nil)
 }
@@ -65,33 +66,32 @@ func Logging(fn http.HandlerFunc) http.HandlerFunc {
 // Index serves the login form and the generated URL for the
 // calendar.
 func (app App) Index(w http.ResponseWriter, r *http.Request) {
-	url := ""
-	if r.Method == http.MethodPost {
-		err := r.ParseForm()
-		if err != nil {
-			app.Error(w, r, http.StatusBadRequest, err)
-			return
-		}
+	app.HTML(w, r, http.StatusOK, "index.html", minion.V{})
+}
 
-		log.Printf("⇒ validating login for user %s", r.FormValue("loginname"))
-		err = LoginToRPS(http.DefaultClient, r.Form)
-		if err != nil {
-			app.Error(w, r, http.StatusBadRequest, err)
-			return
-		}
-
-		encrypted, err := EncryptForm(r.Form, &app.SecretKey)
-		if err != nil {
-			app.Error(w, r, http.StatusInternalServerError, err)
-			return
-		}
-
-		log.Printf("⇒ created calendar url for user %s", r.FormValue("loginname"))
-		url = os.Getenv("BASE_URL") + "/ical?" + string(encrypted)
+func (app App) GenerateURL(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		app.Error(w, r, http.StatusBadRequest, err)
+		return
 	}
 
-	app.HTML(w, r, http.StatusOK, "index.html", minion.V{
-		"url": url,
+	log.Printf("⇒ validating login for user %s", r.FormValue("loginname"))
+	err = LoginToRPS(http.DefaultClient, r.Form)
+	if err != nil {
+		app.Error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	encrypted, err := EncryptForm(r.Form, &app.SecretKey)
+	if err != nil {
+		app.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	log.Printf("⇒ created calendar url for user %s", r.FormValue("loginname"))
+	app.HTML(w, r, http.StatusOK, "generated.html", minion.V{
+		"url": os.Getenv("BASE_URL") + "/ical?" + string(encrypted),
 	})
 }
 

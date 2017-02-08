@@ -4,16 +4,24 @@
 	<body>
 		<div class="aligner container">
 			<div class="col-sm-6 col-xs-12">
-				<div class="well">
-					{{ block "error.html-fragment" . }}
+				<div id="well" class="well">
+					{{ block "generated.html-fragment" . }}
 					<div class="text-center">
-						{{ template "panda-img" }}
-						<h2 class="text-danger">Es ist ein Fehler aufgetreten!</h2>
+						{{ template "tiger-img" }}
+						<h2>RPS Export</h2>
 						<hr />
 					</div>
 
+
 					<div class="text-center">
-						<h4 class="long-link">{{ .error }}</h4>
+
+						<p>
+							Mit dieser URL kannst du deinen Dienstplan bei anderen Kalendern hinzufügen:
+						</p>
+
+						<p>
+							<strong class="long-text"><a href="{{ .url }}">{{ .url }}</a></strong>
+						</p>
 
 						<hr />
 						<a href="/" ic-get-from="/" ic-target=".well" ic-push-url="true"

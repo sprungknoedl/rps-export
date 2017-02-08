@@ -202,6 +202,10 @@ func (m *Minion) HTML(w http.ResponseWriter, r *http.Request, code int, name str
 	principal := m.Get(w, r, PrincipalKey, Principal{}).(Principal)
 	data["principal"] = principal
 
+	if r.Header.Get("X-IC-Request") == "true" {
+		name = name + "-fragment"
+	}
+
 	w.Header().Add("content-type", "text/html; charset=utf-8")
 	err = m.templates.ExecuteTemplate(w, name, data)
 	if err != nil {

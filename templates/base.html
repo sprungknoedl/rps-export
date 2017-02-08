@@ -1,35 +1,44 @@
 {{ define "head" }}
 <head>
-    <title>RPS Export</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://bootswatch.com/sandstone/bootstrap.min.css" rel="stylesheet">
-    <style>
-    html, body {
-        height: 100%;
-    }
+	<title>RPS Export</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://bootswatch.com/sandstone/bootstrap.min.css" rel="stylesheet">
+	<style>
+	html, body {
+		height: 100%;
+	}
 
-    .aligner {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100%;
-    }
+	.aligner {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 100%;
+	}
 
-    .long-text {
-        word-wrap: break-word;
-    }
+	.long-text {
+		word-wrap: break-word;
+	}
 
-    @media (max-width:767px){
-        .well {
-            margin-top: 20px;
-        }
-    }
-    </style>
+	@media (max-width:767px){
+		.well {
+			margin-top: 20px;
+		}
+	}
+
+	.well {
+		transition: all .2s;
+	}
+
+	.well.ic-transitioning {
+		opacity: 0;
+	}
+	</style>
 </head>
 {{ end }}
 
 {{ define "scripts" }}
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="http://cdn.intercoolerjs.org/intercooler-1.0.3.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 {{ end }}
