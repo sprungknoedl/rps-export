@@ -45,6 +45,7 @@ func main() {
 	app := App{Minion: minion.NewMinion("rkd", key)}
 	copy(app.SecretKey[:], key)
 
+	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
 	http.HandleFunc("/ical", Logging(app.ProxyICS))
 	http.HandleFunc("/gen", Logging(app.GenerateURL))
 	http.HandleFunc("/", Logging(app.Index))
