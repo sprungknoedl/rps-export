@@ -1,0 +1,9 @@
+WAIT=1
+TIMEOUT=10
+ATTEMPTS=3
+
+/                                          RPS Export
+/assets/js/jquery-3.1.1.min.js             jQuery v3.1.1
+/assets/js/intercooler-1.0.3.min.js        intercooler  1.0.3
+/assets/js/bootstrap-3.3.7.min.js          Bootstrap v3.3.7
+/assets/css/bootstrap-3.3.7.min.css	       Bootstrap v3.3.7
